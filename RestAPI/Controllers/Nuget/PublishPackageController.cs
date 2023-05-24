@@ -1,10 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
+using RestAPI.Domain.Services;
 
 namespace RestAPI.Controllers.Nuget;
 
 [Route("/api/v2/publish")]
 public class PublishPackageController : BaseController
 {
+    private readonly INugetPackageService _nugetPackageService;
+
+    public PublishPackageController(INugetPackageService nugetPackageService)
+    {
+        _nugetPackageService = nugetPackageService;
+    }
+
     [HttpPut]
     public async Task<IActionResult> PublishPackage(CancellationToken cancellationToken)
     {
@@ -18,6 +26,13 @@ public class PublishPackageController : BaseController
 
         if (form.Files.Count < 1)
             return BadRequest();
+
+        var nugetPackage = form.Files.First();
+
+        await using var nugetPackageStream = new MemoryStream();
+        await nugetPackage.CopyToAsync(nugetPackageStream, cancellationToken);
+
+        await _nugetPackageService.ValidateNugetPackage(nugetPackageStream, cancellationToken);
 
         // TODO: check if package is valid
 
