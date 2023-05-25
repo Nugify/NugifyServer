@@ -4,5 +4,6 @@ namespace RestAPI.Domain.Services;
 
 public interface INugetPackageService
 {
-    Task<NugetValidationResultDto> ValidateNugetPackage(MemoryStream nugetPackageStream, CancellationToken cancellationToken);
+    NugetValidationResultDto ValidateNugetPackage(MemoryStream nugetPackageStream);
+    MetadataValidationResultDto ValidateMetadata(NugetPackageMetadataDto metadata);
 }

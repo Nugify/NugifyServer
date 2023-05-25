@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
 using ICSharpCode.SharpZipLib.Zip;
@@ -7,8 +8,10 @@ namespace RestAPI.Domain.Services.NugetPackageService;
 
 public class NugetPackageService : INugetPackageService
 {
-    public async Task<NugetValidationResultDto> ValidateNugetPackage(MemoryStream nugetPackageStream,
-        CancellationToken cancellationToken)
+    private const string _semVerRegex =
+        "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
+    
+    public NugetValidationResultDto ValidateNugetPackage(MemoryStream nugetPackageStream)
     {
         using var zip = new ZipFile(nugetPackageStream);
 
@@ -45,5 +48,30 @@ public class NugetPackageService : INugetPackageService
             IsValid = false,
             Error = "*.nuspec was not found"
         };
+    }
+
+    public MetadataValidationResultDto ValidateMetadata(NugetPackageMetadataDto metadata)
+    {
+        var result = new MetadataValidationResultDto();
+
+        if (string.IsNullOrWhiteSpace(metadata.Id))
+            result.Errors.Add("Package id is missing");
+
+        if (string.IsNullOrWhiteSpace(metadata.Version))
+            result.Errors.Add("Package version is missing");
+        
+        if(!Regex.Matches(metadata.Version!, _semVerRegex).Any())
+            result.Errors.Add("Package version is invalid");
+        
+        if(string.IsNullOrWhiteSpace(metadata.Description))
+            result.Errors.Add("Package description is missing");
+        
+        if(string.IsNullOrWhiteSpace(metadata.Authors))
+            result.Errors.Add("Package authors is missing");
+
+        if (!result.Errors.Any())
+            result.IsValid = true;
+
+        return result;
     }
 }

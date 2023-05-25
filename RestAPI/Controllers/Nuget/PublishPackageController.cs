@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using RestAPI.Domain.Services;
 
 namespace RestAPI.Controllers.Nuget;
@@ -32,7 +33,13 @@ public class PublishPackageController : BaseController
         await using var nugetPackageStream = new MemoryStream();
         await nugetPackage.CopyToAsync(nugetPackageStream, cancellationToken);
 
-        await _nugetPackageService.ValidateNugetPackage(nugetPackageStream, cancellationToken);
+        var packageValidationResult = _nugetPackageService.ValidateNugetPackage(nugetPackageStream);
+        if (!packageValidationResult.IsValid || packageValidationResult.PackageMetadata == null)
+            return new BadRequestObjectResult(packageValidationResult.Error);
+        
+        var metadataValidationResult = _nugetPackageService.ValidateMetadata(packageValidationResult.PackageMetadata);
+        if (!metadataValidationResult.IsValid)
+            return new BadRequestObjectResult(metadataValidationResult.Errors);
 
         // TODO: check if package is valid
 
