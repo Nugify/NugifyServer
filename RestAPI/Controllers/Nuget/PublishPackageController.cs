@@ -27,6 +27,8 @@ public class PublishPackageController : BaseController
 
         if (form.Files.Count < 1)
             return BadRequest();
+        
+        // TODO: check if package is valid
 
         var nugetPackage = form.Files.First();
 
@@ -37,11 +39,11 @@ public class PublishPackageController : BaseController
         if (!packageValidationResult.IsValid || packageValidationResult.PackageMetadata == null)
             return new BadRequestObjectResult(packageValidationResult.Error);
         
+        // TODO: check if package metadata is valid
+        
         var metadataValidationResult = _nugetPackageService.ValidateMetadata(packageValidationResult.PackageMetadata);
         if (!metadataValidationResult.IsValid)
             return new BadRequestObjectResult(metadataValidationResult.Errors);
-
-        // TODO: check if package is valid
 
         //TODO: check if package does not exist
 
