@@ -8,12 +8,12 @@ namespace RestAPI.Domain.Services.NugetPackageService;
 
 public class NugetPackageService : INugetPackageService
 {
-    private const string _semVerRegex =
+    private const string SemVerRegex =
         "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
     
     public NugetValidationResultDto ValidateNugetPackage(MemoryStream nugetPackageStream)
     {
-        using var zip = new ZipFile(nugetPackageStream);
+        using var zip = new ZipFile(nugetPackageStream, true);
 
         foreach (ZipEntry entry in zip)
         {
@@ -60,7 +60,7 @@ public class NugetPackageService : INugetPackageService
         if (string.IsNullOrWhiteSpace(metadata.Version))
             result.Errors.Add("Package version is missing");
         
-        if(!Regex.Matches(metadata.Version!, _semVerRegex).Any())
+        if(!Regex.Matches(metadata.Version!, SemVerRegex).Any())
             result.Errors.Add("Package version is invalid");
         
         if(string.IsNullOrWhiteSpace(metadata.Description))

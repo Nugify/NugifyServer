@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Options;
-using RestAPI.Configuration;
+using RestAPI.Domain.Configuration;
 using RestAPI.Domain.Services;
 using RestAPI.Domain.Services.NugetPackageService;
+using RestAPI.Domain.Services.NugetStorageService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.Configure<NugifyConfiguration>(builder.Configuration.GetSection
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<INugetPackageService, NugetPackageService>();
+builder.Services.AddScoped<INugetStorageService, NugetFileSystemStorageService>();
 
 var app = builder.Build();
 

@@ -1,4 +1,6 @@
-namespace RestAPI.Configuration;
+using Microsoft.Extensions.Configuration;
+
+namespace RestAPI.Domain.Configuration;
 
 public class NugifyConfigurationSource : IConfigurationSource
 {

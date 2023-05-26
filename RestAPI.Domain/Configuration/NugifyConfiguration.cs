@@ -1,4 +1,4 @@
-namespace RestAPI.Configuration;
+namespace RestAPI.Domain.Configuration;
 
 public class NugifyConfiguration
 {

@@ -8,10 +8,12 @@ namespace RestAPI.Controllers.Nuget;
 public class PublishPackageController : BaseController
 {
     private readonly INugetPackageService _nugetPackageService;
+    private readonly INugetStorageService _nugetStorageService;
 
-    public PublishPackageController(INugetPackageService nugetPackageService)
+    public PublishPackageController(INugetPackageService nugetPackageService, INugetStorageService nugetStorageService)
     {
         _nugetPackageService = nugetPackageService;
+        _nugetStorageService = nugetStorageService;
     }
 
     [HttpPut]
@@ -48,6 +50,11 @@ public class PublishPackageController : BaseController
         //TODO: check if package does not exist
 
         //TODO: save package
+        var nugetPackageId = Guid.NewGuid(); //TODO: save package entry to db and generate id
+        var packageSaveResult = await _nugetStorageService.SavePackage(nugetPackageId, nugetPackageStream);
+        
+        if(!packageSaveResult)
+            return StatusCode(StatusCodes.Status500InternalServerError);
 
         return new AcceptedResult();
     }

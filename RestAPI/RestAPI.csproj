@@ -10,8 +10,4 @@
       <ProjectReference Include="..\RestAPI.Domain\RestAPI.Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Models\" />
-    </ItemGroup>
-
 </Project>
