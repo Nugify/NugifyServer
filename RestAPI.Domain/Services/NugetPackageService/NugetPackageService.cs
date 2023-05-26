@@ -26,6 +26,7 @@ public class NugetPackageService : INugetPackageService
             using var entryReader = new StreamReader(zip.GetInputStream(entry));
 
             var xmlReader = new XmlTextReader(entryReader);
+            xmlReader.Namespaces = false;
             var serializer = new XmlSerializer(typeof(NugetPackageDto));
             var nugetPackage = serializer.Deserialize(xmlReader) as NugetPackageDto;
 
