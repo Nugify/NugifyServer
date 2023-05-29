@@ -1,26 +1,65 @@
+using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace RestAPI.Domain.Services.NugetPackageService.Dtos;
 
-[XmlRoot(ElementName = "metadata")]
 public class NugetPackageMetadataDto
 {
-    [XmlElement(ElementName = "id")] public string? Id { get; set; }
+    private XDocument? _document;
+    private XElement? _metadataNode;
 
-    [XmlElement(ElementName = "version")] public string? Version { get; set; }
+    public NugetPackageMetadataDto(StreamReader nuspecStream)
+    {
+        LoadMetadata(nuspecStream);
+    }
 
-    [XmlElement(ElementName = "title")] public string? Title { get; set; }
+    public string? Id
+    {
+        get
+        {
+            if (_document == null || _metadataNode == null)
+                return null;
+            
+            var node = _metadataNode
+                .Elements(XName.Get("id", _metadataNode.GetDefaultNamespace().NamespaceName))
+                .FirstOrDefault();
 
-    [XmlElement(ElementName = "authors")] public string? Authors { get; set; }
+            return node?.Value;
+        }
+    }
 
-    [XmlElement(ElementName = "licenseUrl")]
-    public string? LicenseUrl { get; set; }
+    public string? Version
+    {
+        get
+        {
+            if (_document == null || _metadataNode == null)
+                return null;
 
-    [XmlElement(ElementName = "projectUrl")]
-    public string? ProjectUrl { get; set; }
+            var node = _metadataNode
+                .Elements(XName.Get("version", _metadataNode.GetDefaultNamespace().NamespaceName))
+                .FirstOrDefault();
 
-    [XmlElement(ElementName = "description")]
-    public string? Description { get; set; }
+            return node?.Value;
+        }
+    }
 
-    [XmlElement(ElementName = "tags")] public string? Tags { get; set; }
+    private void LoadMetadata(StreamReader nuspecStream)
+    {
+        using var xmlReader = XmlReader.Create(nuspecStream, new XmlReaderSettings
+        {
+            CloseInput = false,
+            IgnoreComments = true,
+            IgnoreWhitespace = true,
+            IgnoreProcessingInstructions = true
+        });
+        
+        _document = XDocument.Load(xmlReader, LoadOptions.None);
+
+        if (_document.Root == null)
+            throw new InvalidDataException("Nuspec stream is invalid");
+        
+        _metadataNode = _document.Root
+            .Elements().FirstOrDefault(x => StringComparer.Ordinal.Equals(x.Name.LocalName, _metadataNode));
+    }
 }

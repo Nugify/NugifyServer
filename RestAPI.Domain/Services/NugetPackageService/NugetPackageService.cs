@@ -25,23 +25,25 @@ public class NugetPackageService : INugetPackageService
 
             using var entryReader = new StreamReader(zip.GetInputStream(entry));
 
-            var xmlReader = new XmlTextReader(entryReader);
-            xmlReader.Namespaces = false;
-            var serializer = new XmlSerializer(typeof(NugetPackageDto));
-            var nugetPackage = serializer.Deserialize(xmlReader) as NugetPackageDto;
-
-            if (nugetPackage == null || nugetPackage.Metadata == null)
+            try
+            {
+                var nugetPackageMetadata = new NugetPackageMetadataDto(entryReader);
+                
+                return new NugetValidationResultDto
+                {
+                    IsValid = true,
+                    PackageMetadata = nugetPackageMetadata
+                };
+            }
+            catch (Exception e)
+            {
                 return new NugetValidationResultDto
                 {
                     IsValid = false,
-                    Error = "Failed to serialize XML"
+                    Error = "Failed to serialize XML",
+                    Exception = e
                 };
-
-            return new NugetValidationResultDto
-            {
-                IsValid = true,
-                PackageMetadata = nugetPackage.Metadata
-            };
+            }
         }
 
         return new NugetValidationResultDto
