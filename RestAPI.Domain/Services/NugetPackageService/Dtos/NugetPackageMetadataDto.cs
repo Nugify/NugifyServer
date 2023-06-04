@@ -14,34 +14,21 @@ public class NugetPackageMetadataDto
         LoadMetadata(nuspecStream);
     }
 
-    public string? Id
+    public string? Id => GetValue("id");
+    public string? Version => GetValue("version");
+    public string? Description => GetValue("description");
+    public string? Authors => GetValue("authors");
+
+    private string? GetValue(string key)
     {
-        get
-        {
-            if (_document == null || _metadataNode == null)
-                return null;
-            
-            var node = _metadataNode
-                .Elements(XName.Get("id", _metadataNode.GetDefaultNamespace().NamespaceName))
-                .FirstOrDefault();
+        if (_document == null || _metadataNode == null)
+            return null;
 
-            return node?.Value;
-        }
-    }
+        var node = _metadataNode
+            .Elements(XName.Get(key, _metadataNode.GetDefaultNamespace().NamespaceName))
+            .FirstOrDefault();
 
-    public string? Version
-    {
-        get
-        {
-            if (_document == null || _metadataNode == null)
-                return null;
-
-            var node = _metadataNode
-                .Elements(XName.Get("version", _metadataNode.GetDefaultNamespace().NamespaceName))
-                .FirstOrDefault();
-
-            return node?.Value;
-        }
+        return node?.Value;
     }
 
     private void LoadMetadata(StreamReader nuspecStream)
@@ -60,6 +47,6 @@ public class NugetPackageMetadataDto
             throw new InvalidDataException("Nuspec stream is invalid");
         
         _metadataNode = _document.Root
-            .Elements().FirstOrDefault(x => StringComparer.Ordinal.Equals(x.Name.LocalName, _metadataNode));
+            .Elements().FirstOrDefault(x => StringComparer.Ordinal.Equals(x.Name.LocalName, "metadata"));
     }
 }
