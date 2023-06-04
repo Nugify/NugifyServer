@@ -1,8 +1,7 @@
-using Microsoft.Extensions.Options;
-using RestAPI.Domain.Configuration;
 using RestAPI.Domain.Services;
 using RestAPI.Domain.Services.NugetPackageService;
 using RestAPI.Domain.Services.NugetStorageService;
+using RestAPI.Persistence.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 

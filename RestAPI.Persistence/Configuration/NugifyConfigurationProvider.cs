@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace RestAPI.Domain.Configuration;
+namespace RestAPI.Persistence.Configuration;
 
 public class NugifyConfigurationProvider : ConfigurationProvider
 {
