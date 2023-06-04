@@ -1,26 +1,52 @@
+using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace RestAPI.Domain.Services.NugetPackageService.Dtos;
 
-[XmlRoot(ElementName = "metadata")]
 public class NugetPackageMetadataDto
 {
-    [XmlElement(ElementName = "id")] public string? Id { get; set; }
+    private XDocument? _document;
+    private XElement? _metadataNode;
 
-    [XmlElement(ElementName = "version")] public string? Version { get; set; }
+    public NugetPackageMetadataDto(StreamReader nuspecStream)
+    {
+        LoadMetadata(nuspecStream);
+    }
 
-    [XmlElement(ElementName = "title")] public string? Title { get; set; }
+    public string? Id => GetValue("id");
+    public string? Version => GetValue("version");
+    public string? Description => GetValue("description");
+    public string? Authors => GetValue("authors");
 
-    [XmlElement(ElementName = "authors")] public string? Authors { get; set; }
+    private string? GetValue(string key)
+    {
+        if (_document == null || _metadataNode == null)
+            return null;
 
-    [XmlElement(ElementName = "licenseUrl")]
-    public string? LicenseUrl { get; set; }
+        var node = _metadataNode
+            .Elements(XName.Get(key, _metadataNode.GetDefaultNamespace().NamespaceName))
+            .FirstOrDefault();
 
-    [XmlElement(ElementName = "projectUrl")]
-    public string? ProjectUrl { get; set; }
+        return node?.Value;
+    }
 
-    [XmlElement(ElementName = "description")]
-    public string? Description { get; set; }
+    private void LoadMetadata(StreamReader nuspecStream)
+    {
+        using var xmlReader = XmlReader.Create(nuspecStream, new XmlReaderSettings
+        {
+            CloseInput = false,
+            IgnoreComments = true,
+            IgnoreWhitespace = true,
+            IgnoreProcessingInstructions = true
+        });
+        
+        _document = XDocument.Load(xmlReader, LoadOptions.None);
 
-    [XmlElement(ElementName = "tags")] public string? Tags { get; set; }
+        if (_document.Root == null)
+            throw new InvalidDataException("Nuspec stream is invalid");
+        
+        _metadataNode = _document.Root
+            .Elements().FirstOrDefault(x => StringComparer.Ordinal.Equals(x.Name.LocalName, "metadata"));
+    }
 }
