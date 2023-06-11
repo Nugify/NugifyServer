@@ -18,6 +18,6 @@ public class NugifyContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseNpgsql();
+        optionsBuilder.UseNpgsql(_configuration.Database!.ConnectionString);
     }
 }
