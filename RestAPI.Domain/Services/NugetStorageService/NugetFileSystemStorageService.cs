@@ -1,19 +1,26 @@
 using Microsoft.Extensions.Options;
+using RestAPI.Domain.Services.NugetPackageService.Dtos;
 using RestAPI.Persistence.Configuration;
+using RestAPI.Persistence.Repositories;
 
 namespace RestAPI.Domain.Services.NugetStorageService;
 
 public class NugetFileSystemStorageService : INugetStorageService
 {
     private readonly NugifyConfiguration _configuration;
+    private readonly INugetPackageRepository _nugetPackageRepository;
 
-    public NugetFileSystemStorageService(IOptions<NugifyConfiguration> configuration)
+    public NugetFileSystemStorageService(IOptions<NugifyConfiguration> configuration,
+        INugetPackageRepository nugetPackageRepository)
     {
+        _nugetPackageRepository = nugetPackageRepository;
         _configuration = configuration.Value;
     }
 
-    public async Task<bool> SavePackage(Guid nugetPackageId, MemoryStream nugetPackageStream)
+    public async Task<bool> SavePackage(NugetPackageMetadataDto metadataDto, MemoryStream nugetPackageStream)
     {
+        var nugetPackageId = await _nugetPackageRepository.Insert(metadataDto.Id!, metadataDto.Version!,
+            metadataDto.Description!, metadataDto.Authors!);
         var path = Path.Join(_configuration.FileSystem.PackagePath, nugetPackageId.ToString());
 
         try
