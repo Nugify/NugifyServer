@@ -21,7 +21,6 @@ public class PublishPackageController : BaseController
     {
         //TODO: authorization
 
-        //TODO: check if request is valid
         if (!Request.HasFormContentType)
             return BadRequest();
 
@@ -29,8 +28,6 @@ public class PublishPackageController : BaseController
 
         if (form.Files.Count < 1)
             return BadRequest();
-        
-        // TODO: check if package is valid
 
         var nugetPackage = form.Files.First();
 
@@ -40,20 +37,17 @@ public class PublishPackageController : BaseController
         var packageValidationResult = _nugetPackageService.ValidateNugetPackage(nugetPackageStream);
         if (!packageValidationResult.IsValid || packageValidationResult.PackageMetadata == null)
             return new BadRequestObjectResult(packageValidationResult.Error);
-        
-        // TODO: check if package metadata is valid
-        
+
         var metadataValidationResult = _nugetPackageService.ValidateMetadata(packageValidationResult.PackageMetadata);
         if (!metadataValidationResult.IsValid)
             return new BadRequestObjectResult(metadataValidationResult.Errors);
 
         //TODO: check if package does not exist
-
-        //TODO: save package
-        var nugetPackageId = Guid.NewGuid(); //TODO: save package entry to db and generate id
-        var packageSaveResult = await _nugetStorageService.SavePackage(nugetPackageId, nugetPackageStream);
         
-        if(!packageSaveResult)
+        var packageSaveResult =
+            await _nugetStorageService.SavePackage(packageValidationResult.PackageMetadata, nugetPackageStream);
+
+        if (!packageSaveResult)
             return StatusCode(StatusCodes.Status500InternalServerError);
 
         return new AcceptedResult();
